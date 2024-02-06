@@ -4,7 +4,7 @@ import { RectAreaLightHelper } from "three/addons/helpers/RectAreaLightHelper.js
 import { RectAreaLightUniformsLib } from "./RectAreaLightUniformsLib.js";
 
 class App {
-  #divContaianer;
+  #divContainer;
   #renderer;
   #scene;
   #camera;
@@ -14,7 +14,7 @@ class App {
 
   constructor() {
     const divContainer = document.querySelector("#webgl-container");
-    this.#divContaianer = divContainer;
+    this.#divContainer = divContainer;
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(window.devicePixelRatio);
@@ -35,8 +35,8 @@ class App {
   }
 
   #setupCamera() {
-    const width = this.#divContaianer.clientWidth;
-    const height = this.#divContaianer.clientHeight;
+    const width = this.#divContainer.clientWidth;
+    const height = this.#divContainer.clientHeight;
     const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 100);
     camera.position.set(7, 7, 0);
     camera.lookAt(0, 0, 0);
@@ -44,7 +44,7 @@ class App {
   }
 
   #setupControls() {
-    new OrbitControls(this.#camera, this.#divContaianer);
+    new OrbitControls(this.#camera, this.#divContainer);
   }
 
   #setupLight() {
@@ -145,8 +145,8 @@ class App {
   }
 
   resize() {
-    const width = this.#divContaianer.clientWidth;
-    const height = this.#divContaianer.clientHeight;
+    const width = this.#divContainer.clientWidth;
+    const height = this.#divContainer.clientHeight;
 
     this.#camera.aspect = width / height;
     this.#camera.updateProjectionMatrix();

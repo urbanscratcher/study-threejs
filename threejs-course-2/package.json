@@ -1,5 +1,4 @@
 {
-  "author": "Hyunjung Joun <urbanscratcher@gmail.com>",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

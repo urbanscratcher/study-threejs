@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
 class App {
-  #divContaianer;
+  #divContainer;
   #renderer;
   #scene;
   #camera;
@@ -14,7 +14,7 @@ class App {
 
   constructor() {
     const divContainer = document.querySelector("#webgl-container");
-    this.#divContaianer = divContainer;
+    this.#divContainer = divContainer;
 
     // Renderer 정의
     const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -45,8 +45,8 @@ class App {
   }
 
   #setupCamera() {
-    const width = this.#divContaianer.clientWidth;
-    const height = this.#divContaianer.clientHeight;
+    const width = this.#divContainer.clientWidth;
+    const height = this.#divContainer.clientHeight;
     const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 100);
     camera.position.z = 20;
     this.#camera = camera;
@@ -61,7 +61,7 @@ class App {
   }
 
   #setupControls() {
-    new OrbitControls(this.#camera, this.#divContaianer);
+    new OrbitControls(this.#camera, this.#divContainer);
   }
 
   #setupModel() {
@@ -119,8 +119,8 @@ class App {
   }
 
   resize() {
-    const width = this.#divContaianer.clientWidth;
-    const height = this.#divContaianer.clientHeight;
+    const width = this.#divContainer.clientWidth;
+    const height = this.#divContainer.clientHeight;
 
     this.#camera.aspect = width / height;
     this.#camera.updateProjectionMatrix();

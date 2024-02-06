@@ -18,6 +18,8 @@ class App {
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(window.devicePixelRatio);
+    // shadow - renderer setting
+    renderer.shadowMap.enabled = true;
     divContainer.appendChild(renderer.domElement);
     this.#renderer = renderer;
 
@@ -37,22 +39,7 @@ class App {
   #setupCamera() {
     const width = this.#divContainer.clientWidth;
     const height = this.#divContainer.clientHeight;
-    const aspect = width / height;
-
-    // Perspective Camera: fovy, aspect, zNear, zFar
-    const camera = new THREE.PerspectiveCamera(75, aspect, 0.1, 100);
-
-    // Orthogrpahic Camera
-    // const camera = new THREE.OrthographicCamera(
-    //   -1 * aspect,
-    //   1 * aspect,
-    //   1,
-    //   -1,
-    //   0.1,
-    //   100
-    // );
-    // camera.zoom = 0.15;
-
+    const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 100);
     camera.position.set(7, 7, 0);
     camera.lookAt(0, 0, 0);
     this.#camera = camera;
@@ -63,9 +50,11 @@ class App {
   }
 
   #setupLight() {
-    // const light = new THREE.AmbientLight(0xff0000, 0.2);
-
-    // const light = new THREE.HemisphereLight("#b0d8f5", "#bb7a1c", 1);
+    const auxLight = new THREE.DirectionalLight(0xffffff, 0.5);
+    auxLight.position.set(0, 5, 0);
+    auxLight.target.position.set(0, 0, 0);
+    this.#scene.add(auxLight.target);
+    this.#scene.add(auxLight);
 
     // const light = new THREE.DirectionalLight(0xffffff, 1);
     // light.position.set(0, 5, 0);
@@ -75,37 +64,44 @@ class App {
     // this.#scene.add(helper);
     // this.#lightHelper = helper;
 
-    // const light = new THREE.PointLight(0xffffff, 5);
+    // Point Lighting
+    // const light = new THREE.PointLight(0xffffff, 0.5);
     // light.position.set(0, 5, 0);
-    // light.distance = 2;
-    // const helper = new THREE.PointLightHelper(light);
-    // this.#scene.add(helper);
 
-    // const light = new THREE.SpotLight(0xffffff, 10);
-    // light.position.set(0, 5, 0);
-    // light.target.position.set(0, 0, 0);
-    // light.angle = THREE.MathUtils.degToRad(30);
-    // light.penumbra = 1; // 빛 감쇄율(0~1)
-    // this.#scene.add(light.target);
-    // const helper = new THREE.SpotLightHelper(light);
-    // this.#scene.add(helper);
-    // this.#lightHelper = helper;
-
-    RectAreaLightUniformsLib.init();
-    const light = new THREE.RectAreaLight(0xffffff, 10, 6, 0.5);
+    // Spot Lighting
+    const light = new THREE.SpotLight(0xffffff, 50);
     light.position.set(0, 5, 0);
-    light.rotation.x = THREE.MathUtils.degToRad(-90);
-    const helper = new RectAreaLightHelper(light);
-    light.add(helper);
+    light.target.position.set(0, 0, 0);
+    light.angle = THREE.MathUtils.degToRad(30);
+    light.penumbra = 0.5;
+    this.#scene.add(light.target);
+
+    // light을 표현하기 위한 카메라에서 카메라가 비추는 절두체를 벗어나는 그림자는 잘려 보임
+    // -> 절두체 크기를 키워야 함
+    light.shadow.camera.top = light.shadow.camera.right = 6;
+    light.shadow.camera.bottom = light.shadow.camera.left = -6;
+
+    // 그림자 품질 향상
+    // 기본 텍스쳐 크기는 512 -> 늘리기
+    light.shadow.mapSize.width = light.shadow.mapSize.height = 2048;
+
+    // 그림자 외곽 blur
+    light.shadow.radius = 1;
+
+    // 그림자 카메라 helper
+    const cameraHelper = new THREE.CameraHelper(light.shadow.camera);
+    this.#scene.add(cameraHelper);
 
     this.#scene.add(light);
     this.#light = light;
+    // shadow - light setting
+    light.castShadow = true;
   }
 
   #setupModel() {
     const groundGeometry = new THREE.PlaneGeometry(10, 10);
     const groundMaterial = new THREE.MeshStandardMaterial({
-      color: "#aaaaaa",
+      color: "#5d718b",
       roughness: 0.5,
       metalness: 0.5,
       side: THREE.DoubleSide,
@@ -113,9 +109,19 @@ class App {
 
     const ground = new THREE.Mesh(groundGeometry, groundMaterial);
     ground.rotation.x = THREE.MathUtils.degToRad(-90);
+    // shadow - model setting
+    ground.receiveShadow = true;
     this.#scene.add(ground);
 
-    const bigSphereGeometry = new THREE.SphereGeometry(1.5, 64, 64, 0, Math.PI);
+    // const bigSphereGeometry = new THREE.SphereGeometry(1.5, 64, 64, 0, Math.PI);
+    const bigSphereGeometry = new THREE.TorusKnotGeometry(
+      1,
+      0.3,
+      128,
+      64,
+      2,
+      3
+    );
     const bigSphereMaterial = new THREE.MeshStandardMaterial({
       color: "#ffffff",
       roughness: 0.1,
@@ -123,7 +129,11 @@ class App {
     });
 
     const bigSphere = new THREE.Mesh(bigSphereGeometry, bigSphereMaterial);
-    bigSphere.rotation.x = THREE.MathUtils.degToRad(-90);
+    // bigSphere.rotation.x = THREE.MathUtils.degToRad(-90);
+    bigSphere.position.y = 1.6;
+    // shadow - model setting
+    bigSphere.receiveShadow = true;
+    bigSphere.castShadow = true;
     this.#scene.add(bigSphere);
 
     const torusGeometry = new THREE.TorusGeometry(0.4, 0.1, 32, 32);
@@ -139,6 +149,8 @@ class App {
       torusPivot.rotation.y = THREE.MathUtils.degToRad(45 * i);
       torus.position.set(3, 0.5, 0);
       torusPivot.add(torus);
+      torus.receiveShadow = true;
+      torus.castShadow = true;
       this.#scene.add(torusPivot);
     });
 
@@ -156,29 +168,16 @@ class App {
     smallSpherePivot.add(smallSphere);
     smallSpherePivot.name = "smallSpherePivot";
     smallSphere.position.set(3, 0.5, 0);
+    smallSphere.receiveShadow = true;
+    smallSphere.castShadow = true;
     this.#scene.add(smallSpherePivot);
-
-    const targetPivot = new THREE.Object3D();
-    const target = new THREE.Object3D();
-    targetPivot.add(target);
-    targetPivot.name = "targetPivot";
-    target.position.set(3, 0.5, 0);
-    this.#scene.add(targetPivot);
   }
 
   resize() {
     const width = this.#divContainer.clientWidth;
     const height = this.#divContainer.clientHeight;
-    const aspect = width / height;
 
-    // resize by camera
-    if (this.#camera instanceof THREE.PerspectiveCamera) {
-      this.#camera.aspect = aspect;
-    } else {
-      this.#camera.left = -1 * aspect; // xLeft
-      this.#camera.right = 1 * aspect; // xRight
-    }
-
+    this.#camera.aspect = width / height;
     this.#camera.updateProjectionMatrix();
     this.#renderer.setSize(width, height);
   }
@@ -196,25 +195,16 @@ class App {
     if (smallSpherePivot) {
       smallSpherePivot.rotation.y = THREE.MathUtils.degToRad(time * 50);
 
-      //
-      const smallSphere = smallSpherePivot.children[0];
-      smallSphere.getWorldPosition(this.#camera.position);
-
-      const targetPivot = this.#scene.getObjectByName("targetPivot");
-      if (targetPivot) {
-        targetPivot.rotation.y = THREE.MathUtils.degToRad(time * 50 + 10);
-
-        const target = targetPivot.children[0];
-        const pt = new THREE.Vector3();
-
-        target.getWorldPosition(pt);
-        this.#camera.lookAt(pt);
-      }
-
       if (this.#light.target) {
         const smallSphere = smallSpherePivot.children[0];
         smallSphere.getWorldPosition(this.#light.target.position);
         if (this.#lightHelper) this.#lightHelper.update();
+      }
+
+      // PointLight
+      if (this.#light instanceof THREE.PointLight) {
+        const smallSphere = smallSpherePivot.children[0];
+        smallSphere.getWorldPosition(this.#light.position);
       }
     }
   }
