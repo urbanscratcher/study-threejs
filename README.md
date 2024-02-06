@@ -1,8 +1,8 @@
-# codes from threeJS courses
+# Source codes from threeJS courses
 
 - Three.js 강좌를 들으며 실습한 코드들
 
-# 강좌 목록
+# List of Courses I've taken
 
 ## threejs-course-1
 
