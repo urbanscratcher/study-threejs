@@ -8,6 +8,10 @@ class App {
   #camera;
   #cube;
 
+  #solarSystem;
+  #earthOrbit;
+  #moonOrbit;
+
   constructor() {
     const divContainer = document.querySelector("#webgl-container");
     this.#divContaianer = divContainer;
@@ -44,7 +48,7 @@ class App {
     const width = this.#divContaianer.clientWidth;
     const height = this.#divContaianer.clientHeight;
     const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 100);
-    camera.position.z = 2;
+    camera.position.z = 20;
     this.#camera = camera;
   }
 
@@ -61,22 +65,57 @@ class App {
   }
 
   #setupModel() {
-    const geometry = new THREE.TorusKnotGeometry(0.6, 0.1, 32, 16, 7, 4);
-    const fillMaterial = new THREE.MeshPhongMaterial({ color: 0x515151 });
-    const cube = new THREE.Mesh(geometry, fillMaterial);
+    const solarSystem = new THREE.Object3D();
+    this.#scene.add(solarSystem);
 
-    const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffff00 });
-    const line = new THREE.LineSegments(
-      new THREE.WireframeGeometry(geometry),
-      lineMaterial
+    const radius = 1;
+    const widthSegments = 12;
+    const heightSegments = 12;
+    const sphereGeometry = new THREE.SphereGeometry(
+      radius,
+      widthSegments,
+      heightSegments
     );
 
-    const group = new THREE.Group();
-    group.add(cube);
-    group.add(line);
+    const sunMaterial = new THREE.MeshPhongMaterial({
+      emissive: 0xffff00,
+      fiatShading: true,
+    });
 
-    this.#scene.add(group);
-    this.#cube = group;
+    const sunMesh = new THREE.Mesh(sphereGeometry, sunMaterial);
+    sunMesh.scale.set(3, 3, 3);
+    solarSystem.add(sunMesh);
+
+    const earthOrbit = new THREE.Object3D();
+    solarSystem.add(earthOrbit);
+
+    const earthMaterial = new THREE.MeshPhongMaterial({
+      color: 0x2233ff,
+      emissive: 0x112244,
+      fiatShading: true,
+    });
+
+    const earthMesh = new THREE.Mesh(sphereGeometry, earthMaterial);
+    earthOrbit.position.x = 10;
+    earthOrbit.add(earthMesh);
+
+    const moonOrbit = new THREE.Object3D();
+    moonOrbit.position.x = 2;
+    earthOrbit.add(moonOrbit);
+
+    const moonMaterial = new THREE.MeshPhongMaterial({
+      color: 0x888888,
+      emissive: 0x222222,
+      fiatShading: true,
+    });
+
+    const moonMesh = new THREE.Mesh(sphereGeometry, moonMaterial);
+    moonMesh.scale.set(0.5, 0.5, 0.5);
+    moonOrbit.add(moonMesh);
+
+    this.#solarSystem = solarSystem;
+    this.#earthOrbit = earthOrbit;
+    this.#moonOrbit = moonOrbit;
   }
 
   resize() {
@@ -97,8 +136,10 @@ class App {
 
   update(time) {
     time *= 0.001; // second unit
-    // this.#cube.rotation.x = time;
-    // this.#cube.rotation.y = time;
+    this.#solarSystem.rotation.y = time / 2;
+
+    this.#earthOrbit.rotation.y = time * 2;
+    this.#moonOrbit.rotation.y = time * 5;
   }
 }
 
