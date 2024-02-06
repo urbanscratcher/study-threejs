@@ -55,3 +55,4 @@
 3. fbx, animation
 4. background setting
 5. realistic glass material
+6. picking w/ raycaster and particle effect

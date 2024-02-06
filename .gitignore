@@ -3,3 +3,4 @@ node_modules
 materials
 .DS_Store
 models
+template.js
