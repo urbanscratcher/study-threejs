@@ -51,4 +51,6 @@
 ### TOC
 
 1. webcam
-2. glTF
+2. glTF, zoom camera
+3. fbx, animation
+4. background setting
