@@ -2,7 +2,7 @@
 
 - Three.js 강좌를 들으며 실습한 코드들
 
-# List of Courses I've taken
+# Course List I've taken
 
 ## threejs-course-1
 
@@ -51,3 +51,4 @@
 ### TOC
 
 1. webcam
+2. glTF
